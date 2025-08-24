@@ -13,7 +13,7 @@ import { ConfidenceBar } from "./components/ConfidenceBar";
 import { LinksBlock } from "./components/LinksBlock";
 import { SettingsSheet } from "./components/SettingsSheet";
 import { StyleBlock } from "./components/StyleBlock";
-
+import { AddModal } from "./components/AddModal";
 // === Ancient Knowledge Atlas – v2 ===
 // Clean, modern, minimalist research notebook with multiple views, appearance settings,
 // role fields, confidence sliders, keyboard shortcuts, and lightweight animations.
@@ -349,7 +349,8 @@ export default function App() {
   const [view, setView] = useState("list"); // list | kanban | timeline | map
   const [kanbanGroup, setKanbanGroup] = useState("role"); // role | tag
   const [showSettings, setShowSettings] = useState(false);
-
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [showAddTopic, setShowAddTopic] = useState(false);
   // Appearance
   const [theme, setTheme] = useAppearance("aka_theme", "light"); // light | dark
   const [accent, setAccent] = useAppearance("aka_accent", "#111827"); // default neutral-900
@@ -398,18 +399,22 @@ export default function App() {
   };
 
   const addCategory = () => {
-    const name = prompt("New category name");
-    if (!name) return;
+    setShowAddCategory(true);
+  };
+
+  const handleAddCategory = (name: string) => {
     const id = slug(name) || `cat-${Date.now()}`;
     setData((prev: any) => [...prev, { id, name, topics: [] }]);
     setActiveCatId(id);
   };
 
   const addTopic = () => {
+    setShowAddTopic(true);
+  };
+
+  const handleAddTopic = (title: string) => {
     const catId = activeCatId || data[0]?.id;
     if (!catId) return;
-    const title = prompt("New topic title");
-    if (!title) return;
     const id = slug(title) || `t-${Date.now()}`;
     setData((prev: any) => prev.map((c: any) => c.id !== catId ? c : ({
       ...c,
@@ -417,7 +422,6 @@ export default function App() {
     })));
     setSelected({ catId, topicId: id });
   };
-
   const exportJSON = () => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -656,6 +660,24 @@ export default function App() {
       </footer>
 
       <SettingsSheet theme={theme} setTheme={setTheme} accent={accent} setAccent={setAccent} showSettings={showSettings} setShowSettings={setShowSettings} />
+
+      <AddModal
+        isOpen={showAddCategory}
+        onClose={() => setShowAddCategory(false)}
+        onSubmit={handleAddCategory}
+        title="Add New Category"
+        placeholder="Enter category name..."
+        submitText="Add Category"
+      />
+
+      <AddModal
+        isOpen={showAddTopic}
+        onClose={() => setShowAddTopic(false)}
+        onSubmit={handleAddTopic}
+        title="Add New Topic"
+        placeholder="Enter topic title..."
+        submitText="Add Topic"
+      />
     </div>
   );
 }
